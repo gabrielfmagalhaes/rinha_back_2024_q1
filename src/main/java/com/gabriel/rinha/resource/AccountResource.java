@@ -5,7 +5,9 @@ import com.gabriel.rinha.model.Transaction;
 import com.gabriel.rinha.repository.AccountRepository;
 import com.gabriel.rinha.repository.TransactionRepository;
 
+import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -22,43 +24,40 @@ public class AccountResource {
     @Inject
     TransactionRepository transactionRepository;
 
-    //Qualquer inserção de cache, vai gerar uma consistencia eventual
+    //Qualquer inserção de cache, vai gerar uma inconsistencia eventual
     //Seria necessario inserir primeiro no cache -> banco de dados
+
+    //TODO adicionar DTO
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/transacoes")
-    public Response createTransaction(Long id, 
+    @Transactional
+    public Uni<Response> createTransaction(Long id, 
     Integer valor, String tipo, String desc) {
-        //cache
-        var account = accountRepository.findById(id);
+        return accountRepository.findById(id)
+            .onItem().ifNotNull().transformToUni(account -> {
+                var newAccount = account.crebito(valor, tipo, desc);
 
-        if (account == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        } 
-
-        //checar para deixar reativo
-        //ambos podem ocorrer em paralelo, mas precisa de um transaction manager
-        if (tipo.equals("d")) {
-            account = account.debit(valor);
-            var transaction = Transaction.create(id, valor, tipo, desc);
-
-            accountRepository.persist(account);
-            transactionRepository.persist(transaction);
-        } else {
-            account.credit(valor);
-            var transaction = Transaction.create(id, valor, tipo, desc);
-
-            accountRepository.persist(account);
-            transactionRepository.persist(transaction);
-        }
-
-        return Response.status(Response.Status.OK).build();
+                return accountRepository.persist(newAccount)
+                    .map(updated -> Response.status(Response.Status.NOT_FOUND)
+                    .entity("Transaction approved" + id)
+                    .build());
+            })
+            .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
+                .entity("Account not found with given id " + id)::build);
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/extrato")
-    public String getTransactions(String id) {
-        return "Hello from 2";
+    public Uni<Response> getTransactions(Long id) {
+        return accountRepository.findById(id)
+            .onItem().ifNotNull().transform(account -> 
+                Response.status(Response.Status.NOT_FOUND)
+                    .entity("Account not found with given id " + account.id)
+                    .build()
+            )
+            .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
+                .entity("Account not found with given id " + id)::build);
     }
 }

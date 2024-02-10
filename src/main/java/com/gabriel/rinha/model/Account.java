@@ -1,19 +1,24 @@
 package com.gabriel.rinha.model;
 
+import org.hibernate.annotations.Cache;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
-//garantir onsistencia com lock pessimista
+//garantir consistencia com lock pessimista
 @Entity
-public class Account extends PanacheEntity {
+// @Cacheable
+public class Account {
     @Id 
     public String id;
     public Integer saldo;
     public Integer limite;
+    
+    //TODO adicionar ManyToOne
+    public Transaction transaction;
 
-    public Account debit(Integer valor) {
+    private Account debit(Integer valor) {
         //fazer um cache do limite
         //com cache do limite, da pra verificar antes de fazer o find
 
@@ -27,9 +32,19 @@ public class Account extends PanacheEntity {
     }
 
     //checar possibilidade de deixar isso na controller direto
-    public Account credit(Integer valor) {
+    private Account credit(Integer valor) {
         this.saldo += valor;
 
         return this;
+    }
+
+    public Account crebito(Integer valor, String tipo, String desc) {
+        this.transaction = Transaction.create(this.id, valor, tipo, desc);
+
+        if (tipo.equals("c")) {
+            return this.debit(valor);
+        }
+
+        return this.credit(valor);
     }
 }
