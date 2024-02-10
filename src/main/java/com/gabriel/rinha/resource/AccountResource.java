@@ -28,6 +28,7 @@ public class AccountResource {
     //Seria necessario inserir primeiro no cache -> banco de dados
 
     //TODO adicionar DTO
+    //TODO adicionar Response DTO
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/transacoes")
@@ -40,13 +41,15 @@ public class AccountResource {
 
                 return accountRepository.persist(newAccount)
                     .map(updated -> Response.status(Response.Status.NOT_FOUND)
-                    .entity("Transaction approved" + id)
+                    .entity("Transaction approved to id " + id)
                     .build());
             })
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
                 .entity("Account not found with given id " + id)::build);
     }
 
+    
+    //TODO adicionar Response DTO
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/extrato")

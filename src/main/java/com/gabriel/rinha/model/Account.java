@@ -1,5 +1,7 @@
 package com.gabriel.rinha.model;
 
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.Cache;
 
 import jakarta.persistence.Cacheable;
