@@ -9,31 +9,63 @@ import com.gabriel.rinha.dto.NovaTransacaoRequest;
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQuery;
 
-//essa tabela deve ser uma insertOnly
-@Entity
-// @Cacheable
+//TODO checar se rola manter esse cacheable
+@Entity(name = "transacoes")
+@Cacheable
 public class Transacao {
     
     @Id
-    public Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     
-    @Column(columnDefinition = "integer")
-    public Integer clienteId;
+    private Long clienteId;
 
-    @Column(columnDefinition = "integer")
-    public Integer valor;
+    private Integer valor;
     
-    public String tipo;
-    public String descricao;
+    private String tipo;
+    private String descricao;
 
     // TODO testar se isso funciona
     @CreationTimestamp
 	@Column(nullable = false, updatable = false)
-    public LocalDateTime efetuadaEm;
+    private LocalDateTime efetuadaEm;
 
-    public static Transacao create(NovaTransacaoRequest request) {
-        return new Transacao();
+    public Transacao() {}
+    
+    public Transacao(Long clienteId, Integer valor, String tipo, String descricao) {
+        this.clienteId = clienteId;
+        this.valor = valor;
+        this.tipo = tipo;
+        this.descricao = descricao;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getClienteId() {
+        return clienteId;
+    }
+
+    public Integer getValor() {
+        return valor;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public LocalDateTime getEfetuadaEm() {
+        return efetuadaEm;
+    }
+
 }

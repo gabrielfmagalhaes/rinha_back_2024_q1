@@ -11,8 +11,8 @@ public record NovaTransacaoRequest(
             return "A descrição deve ser uma String de 1 a 10 caracteres";
         }
 
-        if (tipo == null || !tipo.equals("c") || !tipo.equals("d")) {
-            return "Deve informar 'c' para crédito ou 'd' para débito";
+        if (tipo == null || (!tipo.equals("c") && !tipo.equals("d"))) {
+            return "Deve informar um tipo 'c' para crédito ou 'd' para débito";
         }
 
         var valorConvertido = valorToInteger();

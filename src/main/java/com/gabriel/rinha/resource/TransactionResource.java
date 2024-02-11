@@ -1,13 +1,18 @@
 package com.gabriel.rinha.resource;
 
+import org.hibernate.reactive.mutiny.Mutiny;
+
+import com.gabriel.rinha.dto.ExtratoResponse;
 import com.gabriel.rinha.dto.NovaTransacaoRequest;
 import com.gabriel.rinha.dto.NovaTransacaoResponse;
 import com.gabriel.rinha.repository.ClienteRepository;
 import com.gabriel.rinha.repository.TransacaoRepository;
 
+import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
+import jakarta.persistence.LockModeType;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -16,6 +21,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("clientes")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class TransactionResource {
 
     @Inject
@@ -24,44 +31,59 @@ public class TransactionResource {
     @Inject
     TransacaoRepository transacaoRepository;
 
-    //Qualquer insercao de cache, vai gerar uma inconsistencia eventual
+    @Inject
+    Mutiny.SessionFactory msf;
+
+//Qualquer insercao de cache, vai gerar uma inconsistencia eventual
     //Seria necessario inserir primeiro no cache -> banco de dados
 
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/transacoes")
-    @Transactional
+    @WithTransaction
     public Uni<Response> createTransaction(Long id, NovaTransacaoRequest request) {
         var errorMessage = request.validateFields();
 
         if (errorMessage != null) {
-            return Uni.createFrom().item(Response.status(422).build());
+            return Uni.createFrom().item(Response.status(422)
+                .entity(errorMessage)
+                .build());
         }
 
-        return clienteRepository.findById(id)
+        return clienteRepository.findById(id, LockModeType.PESSIMISTIC_WRITE)
             .onItem().ifNotNull().transformToUni(cliente -> {
                 var clienteAtt = cliente.crebito(request);
 
                 return clienteRepository.persist(clienteAtt)
                     .map(updated -> Response.status(Response.Status.OK)
-                        .entity(new NovaTransacaoResponse(updated.limite, updated.saldo))
+                        .entity(new NovaTransacaoResponse(updated.getLimite(), updated.getSaldo()))
                         .build());
             })
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
-                .entity("Cliente não encontrado com o id " + id)::build);
+                .entity("Cliente não encontrado com o id " + id)::build)
+            .onFailure().recoverWithUni((ex) -> { 
+                System.out.println(" deu erro em");
+                return Uni.createFrom().item(Response.status(422)
+                .entity("Não foi possível realizar a sua transação\n" + ex.getMessage())
+                .build());
+            });
     }
 
-    
-    // TODO adicionar Response DTO
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/extrato")
     public Uni<Response> getTransactions(Long id) {
+        //TODO talvez valha a pena abrir duas sessoes
+        //pra buscar em paralelo
+        
         return clienteRepository.findById(id)
-            .onItem().ifNotNull().transform(account -> 
-                Response.status(Response.Status.NOT_FOUND)
-                    .entity("Cliente não encontrado com o id " + account.id)
-                    .build()
+            .onItem().ifNotNull().transformToUni(cliente -> 
+                transacaoRepository.findExtratoById(id)
+                    .onItem()
+                    .transform(transacoes ->
+                        cliente.updateWithTransactions(transacoes)
+                    )
+                    .map(updatedCliente -> Response.status(Response.Status.OK)
+                    .entity(ExtratoResponse.novoExtratoResponse(updatedCliente))
+                    .build())
             )
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
                 .entity("Cliente não encontrado com o id " + id)::build);

@@ -11,24 +11,24 @@ public record ExtratoResponse (
     ClienteItemResponse saldo,
     List<HistoricoTransacaoItemResponse> ultimas_transacoes
 ) {
-    public ExtratoResponse novoExtratoResponse(Cliente cliente) {
-        List<HistoricoTransacaoItemResponse> historicoTransacoes = new ArrayList<>(cliente.transacoes.size());
+    public static ExtratoResponse novoExtratoResponse(Cliente cliente) {
+        List<HistoricoTransacaoItemResponse> historicoTransacoes = new ArrayList<>(cliente.getTransacoes().size());
 
-        for (Transacao transacao : cliente.transacoes) {
+        for (Transacao transacao : cliente.getTransacoes()) {
             var historicoTransacao = new HistoricoTransacaoItemResponse(
-                transacao.valor,
-                transacao.tipo,
-                transacao.descricao,
-                transacao.efetuadaEm
+                transacao.getValor(),
+                transacao.getTipo(),
+                transacao.getDescricao(),
+                transacao.getEfetuadaEm()
             );
 
             historicoTransacoes.add(historicoTransacao);
         }
 
         return new ExtratoResponse(
-            new ClienteItemResponse(cliente.saldo, 
+            new ClienteItemResponse(cliente.getSaldo(), 
                 LocalDateTime.now(), 
-                cliente.limite),
+                cliente.getLimite()),
             historicoTransacoes);
     }
 }
