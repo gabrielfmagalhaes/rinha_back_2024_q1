@@ -8,7 +8,7 @@ import com.gabriel.rinha.model.Cliente;
 import com.gabriel.rinha.model.Transacao;
 
 public record ExtratoResponse (
-    ClienteResponse saldo,
+    ClienteItemResponse saldo,
     List<HistoricoTransacaoItemResponse> ultimas_transacoes
 ) {
     public ExtratoResponse novoExtratoResponse(Cliente cliente) {
@@ -26,7 +26,7 @@ public record ExtratoResponse (
         }
 
         return new ExtratoResponse(
-            new ClienteResponse(cliente.saldo, 
+            new ClienteItemResponse(cliente.saldo, 
                 LocalDateTime.now(), 
                 cliente.limite),
             historicoTransacoes);
