@@ -8,6 +8,7 @@ CREATE TABLE clientes (
 CREATE TABLE transacoes (
     id SERIAL PRIMARY KEY,
     clienteId integer NOT NULL,
+    tipo char(1) NOT NULL,
     valor integer NOT NULL,
     descricao varchar(10) NOT NULL,
     efetuadaEm timestamp NOT NULL,
