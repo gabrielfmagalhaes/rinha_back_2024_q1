@@ -1,9 +1,8 @@
 package com.gabriel.rinha.resource;
 
-import com.gabriel.rinha.model.Account;
-import com.gabriel.rinha.model.Transaction;
-import com.gabriel.rinha.repository.AccountRepository;
-import com.gabriel.rinha.repository.TransactionRepository;
+import com.gabriel.rinha.dto.NovaTransacaoRequest;
+import com.gabriel.rinha.repository.ClienteRepository;
+import com.gabriel.rinha.repository.TransacaoRepository;
 
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
@@ -16,13 +15,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("clientes")
-public class AccountResource {
+public class TransactionResource {
 
     @Inject
-    AccountRepository accountRepository;
+    ClienteRepository clienteRepository;
     
     @Inject
-    TransactionRepository transactionRepository;
+    TransacaoRepository transacaoRepository;
 
     //Qualquer inserção de cache, vai gerar uma inconsistencia eventual
     //Seria necessario inserir primeiro no cache -> banco de dados
@@ -33,19 +32,24 @@ public class AccountResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/transacoes")
     @Transactional
-    public Uni<Response> createTransaction(Long id, 
-    Integer valor, String tipo, String desc) {
-        return accountRepository.findById(id)
-            .onItem().ifNotNull().transformToUni(account -> {
-                var newAccount = account.crebito(valor, tipo, desc);
+    public Uni<Response> createTransaction(Long id, NovaTransacaoRequest request) {
+        var errorMessage = request.validateFields();
 
-                return accountRepository.persist(newAccount)
+        if (errorMessage != null) {
+            return Uni.createFrom().item(Response.status(422).build());
+        }
+
+        return clienteRepository.findById(id)
+            .onItem().ifNotNull().transformToUni(cliente -> {
+                var clienteAtt = cliente.crebito(request);
+
+                return clienteRepository.persist(clienteAtt)
                     .map(updated -> Response.status(Response.Status.NOT_FOUND)
-                    .entity("Transaction approved to id " + id)
+                    .entity("Transação aprovada para o cliente " + id)
                     .build());
             })
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
-                .entity("Account not found with given id " + id)::build);
+                .entity("Cliente não encontrado com o id " + id)::build);
     }
 
     
@@ -54,13 +58,13 @@ public class AccountResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/extrato")
     public Uni<Response> getTransactions(Long id) {
-        return accountRepository.findById(id)
+        return clienteRepository.findById(id)
             .onItem().ifNotNull().transform(account -> 
                 Response.status(Response.Status.NOT_FOUND)
-                    .entity("Account not found with given id " + account.id)
+                    .entity("Cliente não encontrado com o id " + account.id)
                     .build()
             )
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
-                .entity("Account not found with given id " + id)::build);
+                .entity("Cliente não encontrado com o id " + id)::build);
     }
 }

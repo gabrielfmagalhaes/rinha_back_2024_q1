@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.Cache;
 
+import com.gabriel.rinha.dto.NovaTransacaoRequest;
+
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -11,16 +13,16 @@ import jakarta.persistence.Id;
 //garantir consistencia com lock pessimista
 @Entity
 // @Cacheable
-public class Account {
+public class Cliente {
     @Id 
     public String id;
     public Integer saldo;
     public Integer limite;
     
     //TODO adicionar ManyToOne
-    public Transaction transaction;
+    public Transacao transacao;
 
-    private Account debit(Integer valor) {
+    private Cliente debito(Integer valor) {
         //fazer um cache do limite
         //com cache do limite, da pra verificar antes de fazer o find
 
@@ -33,20 +35,15 @@ public class Account {
         return this;
     }
 
-    //checar possibilidade de deixar isso na controller direto
-    private Account credit(Integer valor) {
-        this.saldo += valor;
+    public Cliente crebito(NovaTransacaoRequest request) {
+        this.transacao = Transacao.create(request);
 
-        return this;
-    }
-
-    public Account crebito(Integer valor, String tipo, String desc) {
-        this.transaction = Transaction.create(this.id, valor, tipo, desc);
-
-        if (tipo.equals("c")) {
-            return this.debit(valor);
+        if (request.tipo().equals("d")) {
+            return this.debito(request.valorToInteger());
         }
 
-        return this.credit(valor);
+        this.saldo += request.valorToInteger();
+
+        return this;
     }
 }
