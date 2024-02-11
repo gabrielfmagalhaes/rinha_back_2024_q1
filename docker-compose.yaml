@@ -12,17 +12,17 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql
-      - ./reset.sql:/docker-entrypoint-initdb.d/01-reset.sql
+      - ./sql/ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql:ro
+      - ./sql/reset.sql:/docker-entrypoint-initdb.d/01-reset.sql:ro
     deploy:
       resources:
         limits:
           cpus: '0.13'
           memory: '256MB'
-    networks:
-      - app-network
+    # networks:
+    #   - app-network
     healthcheck:
-      test: ["CMD", "pg_isready", "--username", "admin"]
+      test: ["CMD-SHELL", "psql -h localhost -U admin -d rinha -c 'SELECT 1;'"]
       interval: 5s
       timeout: 5s
       retries: 20
