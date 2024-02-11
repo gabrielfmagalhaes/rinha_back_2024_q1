@@ -16,7 +16,7 @@ import jakarta.persistence.NamedQuery;
 
 //TODO checar se rola manter esse cacheable
 @Entity(name = "transacoes")
-@Cacheable
+// @Cacheable
 public class Transacao {
     
     @Id
@@ -66,6 +66,16 @@ public class Transacao {
 
     public LocalDateTime getEfetuadaEm() {
         return efetuadaEm;
+    }
+
+    public static Transacao novo(NovaTransacaoRequest request, Long clienteId) {
+        var valorConvertido = request.valorToInteger();
+
+        return new Transacao(
+            clienteId,
+            valorConvertido,
+            request.tipo(),
+            request.descricao());
     }
 
 }

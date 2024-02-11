@@ -5,6 +5,7 @@ import org.hibernate.reactive.mutiny.Mutiny;
 import com.gabriel.rinha.dto.ExtratoResponse;
 import com.gabriel.rinha.dto.NovaTransacaoRequest;
 import com.gabriel.rinha.dto.NovaTransacaoResponse;
+import com.gabriel.rinha.model.Transacao;
 import com.gabriel.rinha.repository.ClienteRepository;
 import com.gabriel.rinha.repository.TransacaoRepository;
 
@@ -51,9 +52,11 @@ public class TransactionResource {
 
         return clienteRepository.findById(id, LockModeType.PESSIMISTIC_WRITE)
             .onItem().ifNotNull().transformToUni(cliente -> {
-                var clienteAtt = cliente.crebito(request);
+                var clienteAtualizado = cliente.crebito(request);
+                var novaTransacao = Transacao.novo(request, id);
 
-                return clienteRepository.persist(clienteAtt)
+                return transacaoRepository.persist(novaTransacao)
+                    .onItem().transformToUni(transacao -> clienteRepository.persist(clienteAtualizado))
                     .map(updated -> Response.status(Response.Status.OK)
                         .entity(new NovaTransacaoResponse(updated.getLimite(), updated.getSaldo()))
                         .build());
@@ -61,7 +64,7 @@ public class TransactionResource {
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
                 .entity("Cliente não encontrado com o id " + id)::build)
             .onFailure().recoverWithUni((ex) -> { 
-                System.out.println(" deu erro em");
+                System.out.println(" deu erro em: " +ex);
                 return Uni.createFrom().item(Response.status(422)
                 .entity("Não foi possível realizar a sua transação\n" + ex.getMessage())
                 .build());

@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.Transient;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 
@@ -18,7 +19,7 @@ import jakarta.persistence.NamedQuery;
 //TODO checar se rola manter esse cacheable
 
 @Entity(name = "clientes")
-@Cacheable
+// @Cacheable
 public class Cliente {
     @Id 
     private Long id;
@@ -32,7 +33,8 @@ public class Cliente {
     */
     
     @OneToMany(mappedBy = "clienteId", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Transacao> transacoes = new ArrayList<>();
+    @Transient
+    private List<Transacao> transacoes;
 
     private Cliente debito(Integer valor) {
         //fazer um cache do limite
@@ -51,14 +53,6 @@ public class Cliente {
     }
 
     public Cliente crebito(NovaTransacaoRequest request) {
-        var valorConvertido = request.valorToInteger();
-        
-        transacoes.add(new Transacao(
-            this.id,
-            valorConvertido,
-            request.tipo(),
-            request.descricao()));
-
         if (request.tipo().equals("d")) {
             return this.debito(request.valorToInteger());
         }
