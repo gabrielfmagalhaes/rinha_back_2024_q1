@@ -22,7 +22,7 @@ public class Transacao {
 
     @CreationTimestamp
 	@Column(nullable = false, updatable = false)
-    public LocalDateTime criadoEm;
+    public LocalDateTime efetuadaEm;
 
     public static Transacao create(NovaTransacaoRequest request) {
         return new Transacao();

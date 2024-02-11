@@ -1,0 +1,29 @@
+version: '3.9'
+name: 'rinha-gabrielmagalhaes'
+
+services:
+ db:
+    image: postgres:latest
+    hostname: db
+    environment:
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=rinha
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql
+      - ./reset.sql:/docker-entrypoint-initdb.d/01-reset.sql
+    deploy:
+      resources:
+        limits:
+          cpus: '0.13'
+          memory: '256MB'
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "--username", "admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
