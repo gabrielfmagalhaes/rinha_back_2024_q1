@@ -9,6 +9,7 @@ import com.gabriel.rinha.dto.NovaTransacaoRequest;
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 
 //garantir consistencia com lock pessimista
 @Entity
@@ -24,10 +25,12 @@ public class Cliente {
         2 - Retornar transacoes sem se preocupar com transacao
         3 - Checar algo sobre projection
     */
-    public Transacao transacao;
+    // public Transacao transacao;
 
-    // TODO adicionar ManyToOne
-    public List<Transacao> transacoes;
+    // // TODO adicionar ManyToOne
+
+    // @ManyToOne
+    // public List<Transacao> transacoes;
 
     private Cliente debito(Integer valor) {
         //fazer um cache do limite
@@ -43,7 +46,7 @@ public class Cliente {
     }
 
     public Cliente crebito(NovaTransacaoRequest request) {
-        this.transacao = Transacao.create(request);
+        // this.transacao = Transacao.create(request);
 
         if (request.tipo().equals("d")) {
             return this.debito(request.valorToInteger());

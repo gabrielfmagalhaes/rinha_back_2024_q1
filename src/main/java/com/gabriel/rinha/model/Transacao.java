@@ -9,18 +9,22 @@ import com.gabriel.rinha.dto.NovaTransacaoRequest;
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 //essa tabela deve ser uma insertOnly
 @Entity
 // @Cacheable
 public class Transacao {
-
-    /* TODO testar se vai funcionar sem
-        a declaracao do id
-    */
     
+    @Id
+    public Integer id;
+    
+    @Column(columnDefinition = "integer")
     public Integer clienteId;
+
+    @Column(columnDefinition = "integer")
     public Integer valor;
+    
     public String tipo;
     public String descricao;
 
