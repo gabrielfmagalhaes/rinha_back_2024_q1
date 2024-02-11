@@ -1,1 +1,24 @@
-POST http://localhost:8080/clientes/1/transacoes
+GET http://localhost:8080/clientes/2/extrato
+content-type: application/json
+
+###
+
+POST http://localhost:8080/clientes/2/transacoes
+content-type: application/json
+
+{
+    "valor": "12",
+    "descricao": "a",
+    "tipo": "d"
+}
+
+###
+
+POST http://localhost:8080/clientes/2/transacoes
+content-type: application/json
+
+{
+    "valor": "12",
+    "descricao": "a",
+    "tipo": "c"
+}
