@@ -1,6 +1,6 @@
 package com.gabriel.rinha.model;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.Cache;
 
@@ -19,8 +19,15 @@ public class Cliente {
     public Integer saldo;
     public Integer limite;
     
-    //TODO adicionar ManyToOne
+    /* TODO testar se é possivel 
+        1 - Adicionar transacao sem se preocupar com transacoes
+        2 - Retornar transacoes sem se preocupar com transacao
+        3 - Checar algo sobre projection
+    */
     public Transacao transacao;
+
+    // TODO adicionar ManyToOne
+    public List<Transacao> transacoes;
 
     private Cliente debito(Integer valor) {
         //fazer um cache do limite

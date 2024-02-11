@@ -1,6 +1,7 @@
 package com.gabriel.rinha.resource;
 
 import com.gabriel.rinha.dto.NovaTransacaoRequest;
+import com.gabriel.rinha.dto.NovaTransacaoResponse;
 import com.gabriel.rinha.repository.ClienteRepository;
 import com.gabriel.rinha.repository.TransacaoRepository;
 
@@ -23,11 +24,9 @@ public class TransactionResource {
     @Inject
     TransacaoRepository transacaoRepository;
 
-    //Qualquer inserção de cache, vai gerar uma inconsistencia eventual
+    //Qualquer insercao de cache, vai gerar uma inconsistencia eventual
     //Seria necessario inserir primeiro no cache -> banco de dados
 
-    //TODO adicionar DTO
-    //TODO adicionar Response DTO
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/transacoes")
@@ -44,16 +43,16 @@ public class TransactionResource {
                 var clienteAtt = cliente.crebito(request);
 
                 return clienteRepository.persist(clienteAtt)
-                    .map(updated -> Response.status(Response.Status.NOT_FOUND)
-                    .entity("Transação aprovada para o cliente " + id)
-                    .build());
+                    .map(updated -> Response.status(Response.Status.OK)
+                        .entity(new NovaTransacaoResponse(updated.limite, updated.saldo))
+                        .build());
             })
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
                 .entity("Cliente não encontrado com o id " + id)::build);
     }
 
     
-    //TODO adicionar Response DTO
+    // TODO adicionar Response DTO
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{id}/extrato")

@@ -14,12 +14,17 @@ import jakarta.persistence.Entity;
 @Entity
 // @Cacheable
 public class Transacao {
+
+    /* TODO testar se vai funcionar sem
+        a declaracao do id
+    */
     
     public Integer clienteId;
     public Integer valor;
     public String tipo;
-    public String desc;
+    public String descricao;
 
+    // TODO testar se isso funciona
     @CreationTimestamp
 	@Column(nullable = false, updatable = false)
     public LocalDateTime efetuadaEm;

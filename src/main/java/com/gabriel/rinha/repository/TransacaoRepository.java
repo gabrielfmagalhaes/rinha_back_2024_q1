@@ -8,5 +8,5 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class TransacaoRepository implements PanacheRepository<Transacao> {
     
-    //TODO adicionar find com orderBy
+    // TODO adicionar find com orderBy
 }
