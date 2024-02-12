@@ -7,10 +7,33 @@ import java.util.List;
 import com.gabriel.rinha.model.Cliente;
 import com.gabriel.rinha.model.Transacao;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record ExtratoResponse (
     ClienteItemResponse saldo,
     List<HistoricoTransacaoItemResponse> ultimas_transacoes
 ) {
+
+    @RegisterForReflection
+    public record ClienteItemResponse(
+        Integer total,
+        LocalDateTime data_extrato,
+        Integer limite
+    ) {
+        
+    }
+
+    @RegisterForReflection
+    public record HistoricoTransacaoItemResponse (
+        Integer valor,
+        String tipo,
+        String descricao,
+        LocalDateTime efetuadaEm
+    ) {
+
+    }
+
     public static ExtratoResponse novoExtratoResponse(Cliente cliente) {
         List<HistoricoTransacaoItemResponse> historicoTransacoes = new ArrayList<>(cliente.getTransacoes().size());
 

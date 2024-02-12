@@ -12,11 +12,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedQuery;
 
 //TODO checar se rola manter esse cacheable
 @Entity(name = "transacoes")
-// @Cacheable
+@Cacheable
 public class Transacao {
     
     @Id

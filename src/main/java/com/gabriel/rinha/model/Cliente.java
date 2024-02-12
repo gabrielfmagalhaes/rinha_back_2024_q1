@@ -1,6 +1,5 @@
 package com.gabriel.rinha.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.gabriel.rinha.dto.NovaTransacaoRequest;
@@ -10,16 +9,13 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
 import jakarta.persistence.Transient;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
 
 
 //TODO checar se rola manter esse cacheable
 
 @Entity(name = "clientes")
-// @Cacheable
+@Cacheable
 public class Cliente {
     @Id 
     private Long id;
@@ -35,6 +31,9 @@ public class Cliente {
     @OneToMany(mappedBy = "clienteId", cascade = CascadeType.ALL, orphanRemoval = true)
     @Transient
     private List<Transacao> transacoes;
+
+    public Cliente() {
+    }
 
     private Cliente debito(Integer valor) {
         //fazer um cache do limite

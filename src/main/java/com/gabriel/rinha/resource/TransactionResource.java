@@ -35,13 +35,19 @@ public class TransactionResource {
     @Inject
     Mutiny.SessionFactory msf;
 
-//Qualquer insercao de cache, vai gerar uma inconsistencia eventual
+    //Qualquer insercao de cache, vai gerar uma inconsistencia eventual
     //Seria necessario inserir primeiro no cache -> banco de dados
 
     @POST
     @Path("{id}/transacoes")
     @WithTransaction
     public Uni<Response> createTransaction(Long id, NovaTransacaoRequest request) {
+        if (id < 1 || id > 5) {
+            return Uni.createFrom().item(Response.status(Response.Status.NOT_FOUND)
+                .entity("Cliente não encontrado com o id " + id)
+                .build());
+        }
+
         var errorMessage = request.validateFields();
 
         if (errorMessage != null) {
@@ -64,10 +70,9 @@ public class TransactionResource {
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
                 .entity("Cliente não encontrado com o id " + id)::build)
             .onFailure().recoverWithUni((ex) -> { 
-                System.out.println(" deu erro em: " +ex);
                 return Uni.createFrom().item(Response.status(422)
-                .entity("Não foi possível realizar a sua transação\n" + ex.getMessage())
-                .build());
+                    .entity("Não foi possível realizar a sua transação\n" + ex.getMessage())
+                    .build());
             });
     }
 
@@ -76,7 +81,13 @@ public class TransactionResource {
     public Uni<Response> getTransactions(Long id) {
         //TODO talvez valha a pena abrir duas sessoes
         //pra buscar em paralelo
-        
+    
+        if (id < 1 || id > 5) {
+            return Uni.createFrom().item(Response.status(Response.Status.NOT_FOUND)
+                .entity("Cliente não encontrado com o id " + id)
+                .build());
+        }
+
         return clienteRepository.findById(id)
             .onItem().ifNotNull().transformToUni(cliente -> 
                 transacaoRepository.findExtratoById(id)

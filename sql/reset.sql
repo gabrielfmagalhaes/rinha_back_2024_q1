@@ -1,3 +1,7 @@
+DELETE FROM transacoes;
+
+DELETE FROM clientes;
+
 INSERT INTO clientes (id, nome, saldo, limite)
   VALUES
     (1, 'o barato sai caro', 0, 1000 * 100),
