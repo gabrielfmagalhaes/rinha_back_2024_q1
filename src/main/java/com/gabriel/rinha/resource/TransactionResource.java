@@ -61,10 +61,11 @@ public class TransactionResource {
                 var clienteAtualizado = cliente.crebito(request);
                 var novaTransacao = Transacao.novo(request, id);
 
-                return transacaoRepository.persist(novaTransacao)
-                    .onItem().transformToUni(transacao -> clienteRepository.persist(clienteAtualizado))
-                    .map(updated -> Response.status(Response.Status.OK)
-                        .entity(new NovaTransacaoResponse(updated.getLimite(), updated.getSaldo()))
+                return Uni.combine().all()
+                    .unis(transacaoRepository.persist(novaTransacao), clienteRepository.persist(clienteAtualizado))
+                    .asTuple()
+                    .map(tuple -> Response.status(Response.Status.OK)
+                        .entity(new NovaTransacaoResponse(tuple.getItem2().getLimite(), tuple.getItem2().getSaldo()))
                         .build());
             })
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
@@ -91,13 +92,12 @@ public class TransactionResource {
         return clienteRepository.findById(id)
             .onItem().ifNotNull().transformToUni(cliente -> 
                 transacaoRepository.findExtratoById(id)
-                    .onItem()
-                    .transform(transacoes ->
+                    .onItem().transform(transacoes ->
                         cliente.updateWithTransactions(transacoes)
                     )
                     .map(updatedCliente -> Response.status(Response.Status.OK)
-                    .entity(ExtratoResponse.novoExtratoResponse(updatedCliente))
-                    .build())
+                        .entity(ExtratoResponse.novoExtratoResponse(updatedCliente))
+                        .build())
             )
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
                 .entity("Cliente não encontrado com o id " + id)::build);
