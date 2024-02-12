@@ -13,7 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-//TODO checar se rola manter esse cacheable
 @Entity(name = "transacoes")
 @Cacheable
 public class Transacao {
@@ -29,7 +28,6 @@ public class Transacao {
     private String tipo;
     private String descricao;
 
-    // TODO testar se isso funciona
     @CreationTimestamp
 	@Column(nullable = false, updatable = false)
     private LocalDateTime efetuadaEm;

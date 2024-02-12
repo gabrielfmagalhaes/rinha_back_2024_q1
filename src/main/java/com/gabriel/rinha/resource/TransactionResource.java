@@ -1,7 +1,5 @@
 package com.gabriel.rinha.resource;
 
-import org.hibernate.reactive.mutiny.Mutiny;
-
 import com.gabriel.rinha.dto.ExtratoResponse;
 import com.gabriel.rinha.dto.NovaTransacaoRequest;
 import com.gabriel.rinha.dto.NovaTransacaoResponse;
@@ -32,11 +30,8 @@ public class TransactionResource {
     @Inject
     TransacaoRepository transacaoRepository;
 
-    @Inject
-    Mutiny.SessionFactory msf;
-
-    //Qualquer insercao de cache, vai gerar uma inconsistencia eventual
-    //Seria necessario inserir primeiro no cache -> banco de dados
+    // @Inject
+    // Mutiny.SessionFactory msf;
 
     @POST
     @Path("{id}/transacoes")

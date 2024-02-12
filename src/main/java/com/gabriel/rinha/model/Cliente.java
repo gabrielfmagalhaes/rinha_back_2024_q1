@@ -11,9 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 
-
-//TODO checar se rola manter esse cacheable
-
 @Entity(name = "clientes")
 @Cacheable
 public class Cliente {
@@ -21,12 +18,6 @@ public class Cliente {
     private Long id;
     private Integer saldo;
     private Integer limite;
-    
-    /* TODO testar se é possivel 
-        1 - Adicionar transacao sem se preocupar com transacoes
-        2 - Retornar transacoes sem se preocupar com transacao
-        3 - Checar algo sobre projection
-    */
     
     @OneToMany(mappedBy = "clienteId", cascade = CascadeType.ALL, orphanRemoval = true)
     @Transient
@@ -36,8 +27,6 @@ public class Cliente {
     }
 
     private Cliente debito(Integer valor) {
-        //fazer um cache do limite
-        //com cache do limite, da pra verificar antes de fazer o find
         if (valor > (this.saldo + this.limite)) {
             throw new RuntimeException(
                 String.format("Saldo insuficiente\n" +
@@ -45,7 +34,6 @@ public class Cliente {
                     this.saldo, this.limite));
         }
     
-        // Update the saldo
         this.saldo -= valor;
          
         return this;
