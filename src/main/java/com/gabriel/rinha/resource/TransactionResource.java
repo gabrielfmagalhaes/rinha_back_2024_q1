@@ -1,5 +1,6 @@
 package com.gabriel.rinha.resource;
 
+import com.gabriel.rinha.dto.ClienteNaoEncontradoResponse;
 import com.gabriel.rinha.dto.ExtratoResponse;
 import com.gabriel.rinha.dto.NovaTransacaoRequest;
 import com.gabriel.rinha.dto.NovaTransacaoResponse;
@@ -30,24 +31,25 @@ public class TransactionResource {
     @Inject
     TransacaoRepository transacaoRepository;
 
-    // @Inject
-    // Mutiny.SessionFactory msf;
+    private static final String TRANSACAO_ERROR = "Não foi possível realizar a sua transação\n";
+
+    private static final String EXTRATO_ERROR = "Não foi possível obter o extrato\n";
 
     @POST
     @Path("{id}/transacoes")
     @WithTransaction
     public Uni<Response> createTransaction(Long id, NovaTransacaoRequest request) {
-        if (id < 1 || id > 5) {
-            return Uni.createFrom().item(Response.status(Response.Status.NOT_FOUND)
-                .entity("Cliente não encontrado com o id " + id)
-                .build());
-        }
-
         var errorMessage = request.validateFields();
 
         if (errorMessage != null) {
             return Uni.createFrom().item(Response.status(422)
                 .entity(errorMessage)
+                .build());
+        }
+
+        if (id < 1 || id > 5) {
+            return Uni.createFrom().item(Response.status(Response.Status.NOT_FOUND)
+                .entity(ClienteNaoEncontradoResponse.novo(id))
                 .build());
         }
 
@@ -64,23 +66,20 @@ public class TransactionResource {
                         .build());
             })
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
-                .entity("Cliente não encontrado com o id " + id)::build)
-            .onFailure().recoverWithUni((ex) -> { 
-                return Uni.createFrom().item(Response.status(422)
-                    .entity("Não foi possível realizar a sua transação\n" + ex.getMessage())
-                    .build());
+                .entity(ClienteNaoEncontradoResponse.novo(id))::build)
+            .onFailure().recoverWithItem((ex) -> { 
+                return Response.status(422)
+                    .entity(TRANSACAO_ERROR + ex.getMessage())
+                    .build();
             });
     }
 
     @GET
     @Path("{id}/extrato")
-    public Uni<Response> getTransactions(Long id) {
-        //TODO talvez valha a pena abrir duas sessoes
-        //pra buscar em paralelo
-    
+    public Uni<Response> getTransactions(Long id) {    
         if (id < 1 || id > 5) {
             return Uni.createFrom().item(Response.status(Response.Status.NOT_FOUND)
-                .entity("Cliente não encontrado com o id " + id)
+                .entity(ClienteNaoEncontradoResponse.novo(id))
                 .build());
         }
 
@@ -95,6 +94,11 @@ public class TransactionResource {
                         .build())
             )
             .onItem().ifNull().continueWith(Response.status(Response.Status.NOT_FOUND)
-                .entity("Cliente não encontrado com o id " + id)::build);
+                .entity(ClienteNaoEncontradoResponse.novo(id))::build)
+            .onFailure().recoverWithItem((ex) -> { 
+                return Response.status(422)
+                    .entity(EXTRATO_ERROR + ex.getMessage())
+                    .build();
+            });
     }
 }

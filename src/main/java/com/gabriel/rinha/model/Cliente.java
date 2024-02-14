@@ -3,6 +3,7 @@ package com.gabriel.rinha.model;
 import java.util.List;
 
 import com.gabriel.rinha.dto.NovaTransacaoRequest;
+import com.gabriel.rinha.dto.exceptions.SaldoInsuficienteException;
 
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.CascadeType;
@@ -26,12 +27,9 @@ public class Cliente {
     public Cliente() {
     }
 
-    private Cliente debito(Integer valor) {
+    private Cliente debito(int valor) {
         if (valor > (this.saldo + this.limite)) {
-            throw new RuntimeException(
-                String.format("Saldo insuficiente\n" +
-                    "Saldo Atual: %d\nLimite da conta: %d", 
-                    this.saldo, this.limite));
+            throw new SaldoInsuficienteException(saldo, limite);
         }
     
         this.saldo -= valor;

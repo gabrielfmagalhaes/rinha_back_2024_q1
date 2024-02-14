@@ -11,7 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class TransacaoRepository implements PanacheRepository<Transacao> {
     
-    public Uni<List<Transacao>> findExtratoById(Long id) {
+    public Uni<List<Transacao>> findExtratoById(long id) {
         return find("clienteId = ?1 ORDER BY efetuadaEm DESC", id)
             .range(0, 9)
             .list();

@@ -21,7 +21,7 @@ public record ExtratoResponse (
         LocalDateTime data_extrato,
         Integer limite
     ) {
-        
+ 
     }
 
     @RegisterForReflection
