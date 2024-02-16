@@ -7,7 +7,7 @@ public record NovaTransacaoRequest(
         
 
     public String validateFields() {
-        if (descricao == null || descricao.trim().equals("") || descricao.length() > 10) {
+        if (descricao == null || descricao.equals("") || descricao.length() > 10) {
             return "A descrição deve ser uma String de 1 a 10 caracteres";
         }
 

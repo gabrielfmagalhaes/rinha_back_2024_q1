@@ -29,7 +29,7 @@ public record ExtratoResponse (
         Integer valor,
         String tipo,
         String descricao,
-        LocalDateTime efetuadaEm
+        LocalDateTime efetuada_em
     ) {
 
     }

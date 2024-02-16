@@ -27,7 +27,15 @@ public class Cliente {
     public Cliente() {
     }
 
-    private Cliente debito(int valor) {
+    public Cliente crebito(NovaTransacaoRequest request) {
+        var valor = request.valorToInteger();
+
+        if (request.tipo().equals("c")) {
+            this.saldo += request.valorToInteger();
+
+            return this;
+        }
+
         if (valor > (this.saldo + this.limite)) {
             throw new SaldoInsuficienteException(saldo, limite);
         }
@@ -35,16 +43,7 @@ public class Cliente {
         this.saldo -= valor;
          
         return this;
-    }
 
-    public Cliente crebito(NovaTransacaoRequest request) {
-        if (request.tipo().equals("d")) {
-            return this.debito(request.valorToInteger());
-        }
-
-        this.saldo += request.valorToInteger();
-
-        return this;
     }
 
     public Cliente updateWithTransactions(List<Transacao> transacoes) {
